@@ -1,0 +1,29 @@
+# Example configuration for PyTerm development/testing
+# Copy this to config.yml and modify as needed
+
+# Security Settings
+safe_mode: false                   # Disable for development (BE CAREFUL!)
+allowed_root: "D:\\Python-Terminal\\sandbox"  # Create this folder for testing
+dry_run: false
+
+# UI Settings
+prompt: "PyTerm> "
+colors_enabled: true
+history_file: ".pyterm_history"
+
+# Logging
+log_level: "DEBUG"                 # Verbose logging for development
+log_file: ".pyterm.log"
+
+# AI Features - Enable these for full functionality
+ai_enabled: true
+ai_confirmation_required: true     # Keep this true for safety
+google_api_key: "AIzaSyDe1RjeTrHHSnkg662Y8F8mS0oVbVUWUU4"
+
+# Command Settings
+recycle_bin: ".recycle_bin"
+max_history_size: 1000
+
+# Monitoring
+monitor_refresh_rate: 2.0
+max_processes_display: 15

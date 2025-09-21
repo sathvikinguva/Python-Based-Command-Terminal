@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyTerm - Web Terminal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .terminal-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1e1e1e 100%);
+        }
+
+        .terminal-header {
+            background: #333;
+            padding: 10px 20px;
+            border-bottom: 2px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            color: #4CAF50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-title::before {
+            content: "🐍";
+            margin-right: 8px;
+        }
+
+        .terminal-status {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background: #4CAF50;
+        }
+
+        .terminal-output {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .terminal-input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: #2d2d2d;
+            border-top: 1px solid #555;
+        }
+
+        .terminal-prompt {
+            color: #4CAF50;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .command-line {
+            margin-bottom: 10px;
+        }
+
+        .prompt {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .command {
+            color: #ffffff;
+            margin-left: 8px;
+        }
+
+        .output {
+            color: #cccccc;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: #ff6b6b;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            color: #ffa500;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Editor Mode Styles */
+        .editor-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #1e1e1e;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            background: #333;
+            padding: 10px 20px;
+            border-bottom: 2px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .editor-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .editor-btn:hover {
+            background: #45a049;
+        }
+
+        .editor-btn.cancel {
+            background: #f44336;
+        }
+
+        .editor-btn.cancel:hover {
+            background: #da190b;
+        }
+
+        .editor-textarea {
+            flex: 1;
+            background: #2d2d2d;
+            color: #ffffff;
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            outline: none;
+            resize: none;
+            tab-size: 4;
+        }
+
+        .editor-footer {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            border-top: 1px solid #555;
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .terminal-header {
+                padding: 8px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .terminal-title {
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+            
+            .terminal-status {
+                font-size: 10px;
+            }
+            
+            .terminal-output {
+                padding: 15px;
+                font-size: 12px;
+            }
+            
+            .terminal-input-container {
+                padding: 8px 15px;
+            }
+            
+            .terminal-input {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">PyTerm Web Terminal</div>
+            <div class="terminal-status">
+                <div class="status-dot"></div>
+                <span id="status-text">Connected</span>
+            </div>
+        </div>
+        
+        <div class="terminal-output" id="output-container">
+            <div class="command-line">
+                <div class="output">🚀 Welcome to PyTerm Web Terminal!</div>
+                <div class="output">🐍 Python-powered terminal with AI integration</div>
+                <div class="output">📍 Type 'help' to see available commands</div>
+                <div class="output">🛡️  Running in safe mode</div>
+                <div class="output">💡 Use 'ls -a' to see hidden files (.pyterm_history, .recycle_bin)</div>
+                <div class="output"></div>
+            </div>
+        </div>
+        
+        <div class="terminal-input-container">
+            <span class="terminal-prompt" id="prompt">PyTerm> </span>
+            <input type="text" class="terminal-input" id="command-input" autofocus placeholder="Enter command...">
+        </div>
+    </div>
+
+    <!-- Multi-line Code Editor -->
+    <div class="editor-container" id="editor-container">
+        <div class="editor-header">
+            <div class="editor-title" id="editor-title">📝 Editing: filename.py</div>
+            <div class="editor-actions">
+                <button class="editor-btn" onclick="saveFile()">💾 Save & Close</button>
+                <button class="editor-btn cancel" onclick="cancelEdit()">❌ Cancel</button>
+            </div>
+        </div>
+        <textarea class="editor-textarea" id="editor-textarea" placeholder="Write your code here..."></textarea>
+        <div class="editor-footer">
+            💡 Use Tab for indentation • Ctrl+S to save • ESC to cancel
+        </div>
+    </div>
+
+    <script>
+        let currentDirectory = '/tmp';
+        let commandHistory = [];
+        let historyIndex = -1;
+        let isExecuting = false;
+        let editorMode = false;
+        let currentEditingFile = '';
+
+        const outputContainer = document.getElementById('output-container');
+        const commandInput = document.getElementById('command-input');
+        const statusText = document.getElementById('status-text');
+        const prompt = document.getElementById('prompt');
+        const editorContainer = document.getElementById('editor-container');
+        const editorTitle = document.getElementById('editor-title');
+        const editorTextarea = document.getElementById('editor-textarea');
+
+        function updateStatus(status) {
+            statusText.textContent = status;
+        }
+
+        function addToOutput(content, className = 'output') {
+            const div = document.createElement('div');
+            div.className = className;
+            div.textContent = content;
+            outputContainer.appendChild(div);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+
+        function addCommandLine(command) {
+            const commandLine = document.createElement('div');
+            commandLine.className = 'command-line';
+            
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = 'PyTerm> ';
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            commandSpan.textContent = command;
+            
+            commandLine.appendChild(promptSpan);
+            commandLine.appendChild(commandSpan);
+            outputContainer.appendChild(commandLine);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+
+        // Editor functions
+        function openEditor(filename, content, language) {
+            editorMode = true;
+            currentEditingFile = filename;
+            
+            editorTitle.textContent = `📝 Editing: ${filename}`;
+            editorTextarea.value = content;
+            editorContainer.style.display = 'flex';
+            editorTextarea.focus();
+        }
+
+        function saveFile() {
+            if (!currentEditingFile) return;
+            
+            const content = editorTextarea.value;
+            
+            // Send save command to backend
+            fetch('/api/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    filename: currentEditingFile,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                closeEditor();
+                addToOutput(`💾 File '${currentEditingFile}' saved successfully`, 'output');
+            })
+            .catch(error => {
+                addToOutput(`Error saving file: ${error.message}`, 'error');
+            });
+        }
+
+        function cancelEdit() {
+            closeEditor();
+            addToOutput('📝 Edit cancelled', 'output');
+        }
+
+        function closeEditor() {
+            editorMode = false;
+            currentEditingFile = '';
+            editorContainer.style.display = 'none';
+            commandInput.focus();
+        }
+
+        async function executeCommand(command) {
+            if (isExecuting || !command.trim()) return;
+            
+            isExecuting = true;
+            updateStatus('Executing...');
+            
+            addCommandLine(command);
+            addToOutput('Executing...', 'loading');
+            
+            // Add to history
+            commandHistory.unshift(command);
+            if (commandHistory.length > 50) {
+                commandHistory = commandHistory.slice(0, 50);
+            }
+            historyIndex = -1;
+            
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ command: command.trim() })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // Remove loading indicator
+                const loadingElements = document.querySelectorAll('.loading');
+                loadingElements.forEach(el => el.remove());
+                
+                // Display output
+                if (result.output) {
+                    addToOutput(result.output, 'output');
+                }
+                
+                // Display errors
+                if (result.error) {
+                    addToOutput(result.error, 'error');
+                }
+                
+                // Check if editor mode should be activated
+                if (result.edit_mode && result.edit_data) {
+                    openEditor(
+                        result.edit_data.filename, 
+                        result.edit_data.content,
+                        'python'
+                    );
+                }
+                
+                // Update current directory
+                if (result.current_directory) {
+                    currentDirectory = result.current_directory;
+                }
+                
+                updateStatus('Ready');
+                
+            } catch (error) {
+                // Remove loading indicator
+                const loadingElements = document.querySelectorAll('.loading');
+                loadingElements.forEach(el => el.remove());
+                
+                addToOutput(`Error: ${error.message}`, 'error');
+                updateStatus('Error');
+            } finally {
+                isExecuting = false;
+                commandInput.value = '';
+            }
+        }
+
+        // Handle input
+        commandInput.addEventListener('keydown', function(e) {
+            if (editorMode) return; // Don't handle terminal input when in editor mode
+            
+            if (e.key === 'Enter' && !isExecuting) {
+                const command = this.value.trim();
+                if (command) {
+                    executeCommand(command);
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    this.value = commandHistory[historyIndex] || '';
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    this.value = commandHistory[historyIndex] || '';
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    this.value = '';
+                }
+            }
+        });
+
+        // Editor keyboard shortcuts
+        editorTextarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cancelEdit();
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveFile();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                // Insert 4 spaces for indentation
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+
+        // Load terminal status on startup
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                currentDirectory = status.current_directory || '/tmp';
+                updateStatus('Ready');
+                addToOutput(`📁 Current directory: ${currentDirectory}`, 'output');
+            } catch (error) {
+                updateStatus('Connection Error');
+                addToOutput('⚠️  Could not connect to terminal backend', 'error');
+            }
+        });
+
+        // Keep input focused
+        setInterval(() => {
+            if (document.activeElement !== commandInput && !isExecuting) {
+                commandInput.focus();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
