@@ -1,11 +1,27 @@
 # PyTerm - AI-Enhanced Python Terminal
 
+## Assignment Entry Point
+**Main File:** `main.py` (Required for assignment submission)
+
 ## Project Overview
 **PyTerm** is a modern, safety-first Python terminal application with dual interfaces (CLI and Web) that combines traditional shell operations with AI-powered natural language processing.
+
+## Quick Start
+```bash
+# Run locally (main entry point)
+python main.py
+
+# Show web terminal info
+python main.py --web
+
+# Enable debug mode
+python main.py --debug
+```
 
 ## Live Deployment
 - **Platform:** Vercel (Serverless)
 - **URL:** `https://pytem.vercel.app/`
+- **GitHub:** `https://github.com/sathvikinguva/Python-Based-Command-Terminal`
 - **Status:** Production Ready
 
 ## Key Features
@@ -72,13 +88,13 @@
 ```
 PyTerm/
 ├── Web Interface
-│   ├── web_app.py                # Flask server + SocketIO
-│   ├── templates/terminal.html   # Web terminal UI
-│   ├── static/                   # CSS, JS, fonts
-│   └── web_requirements.txt      # Web dependencies
+│   ├── api/basic_terminal.py     # Flask API + AI integration
+│   ├── templates/                # Web terminal UI
+│   └── vercel.json              # Deployment configuration
 │
 ├── Core Terminal  
-│   ├── cli.py                    # Main CLI application
+│   ├── main.py                   # Main entry point (REQUIRED)
+│   ├── cli.py                    # Alternative CLI interface
 │   ├── executor.py               # Safety & security core
 │   ├── commands/                 # Command implementations
 │   └── autocomplete.py           # Auto-completion logic
@@ -105,8 +121,8 @@ PyTerm/
 
 ### CLI Interface
 ```bash
-# Start the terminal
-python cli.py
+# Start the terminal (main entry point)
+python main.py
 
 # Basic commands
 ls -la                    # List all files
