@@ -23,7 +23,8 @@ python main.py --debug
 - **URL:** `https://pytem.vercel.app/`
 - **GitHub:** `https://github.com/sathvikinguva/Python-Based-Command-Terminal`
 - **Status:** Production Ready
-- **Video Explanation:** [Click Here]`https://drive.google.com/file/d/1sBpRysGrTThxx3tm2clmpkUDu09L0fph/view?usp=sharing`
+- **Video Explanation:** [Click Here](https://drive.google.com/file/d/1sBpRysGrTThxx3tm2clmpkUDu09L0fph/view?usp=sharing)
+
 
 ## Key Features
 
