@@ -74,7 +74,7 @@ python main.py --debug
 - Pytest (Testing)
 
 **Frontend:**
-- HTML5/CSS3/
+- HTML5/CSS3
 - WebSocket communication
 - Responsive CSS Grid/Flexbox
 - Real-time terminal emulation
